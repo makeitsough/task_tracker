@@ -6,10 +6,17 @@ import { useEffect, useState } from 'react';
 import { signIn, signOut, useSession, getProviders } from 'next-auth/react';
 
 const Nav = () => {
-  const isLoggedIn = true;
+  const { data: session } = useSession();
 
   const [providers, setProviders] = useState(null);
   const [toggleDropdown, setToggleDropdown] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const res = await getProviders();
+      setProviders(res);
+    })();
+  }, []);
 
   return (
     <nav className="flex-between w-full mb-14 pt-3">
@@ -25,20 +32,20 @@ const Nav = () => {
 
       {/* Desktop Navigation */}
       <div className="sm:flex hidden">
-        {isLoggedIn ? (
+        {session?.user ? (
           <div className="flex gap-3 md:gap-5">
-            <Link href="/dashboard" className="black_btn">
-              Dashboard
+            <Link href="/create-prompt" className="black_btn">
+              Create Post
             </Link>
             <button type="button" onClick={signOut} className="outline_btn">
               Sign Out
             </button>
 
-            <Link href="/dashboard">
+            <Link href="/profile">
               <Image
-                src="/assets/icons/cloud.png"
-                width={37}
-                height={37}
+                src={session?.user.image}
+                width={40}
+                height={40}
                 className="rounded-full"
                 alt="profile"
               />
@@ -51,9 +58,13 @@ const Nav = () => {
                 <button
                   type="button"
                   key={provider.name}
-                  onClick={() => signIn(provider.id)}
+                  onClick={() => {
+                    signIn(provider.id);
+                  }}
                   className="black_btn"
-                ></button>
+                >
+                  Sign in
+                </button>
               ))}
           </>
         )}
@@ -61,7 +72,7 @@ const Nav = () => {
 
       {/* Mobile Navigation */}
       <div className="sm:hidden flex relative">
-        {isLoggedIn ? (
+        {session?.user ? (
           <div className="flex">
             <Image
               src="/assets/icons/cloud.png"
